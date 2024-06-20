@@ -1,0 +1,188 @@
+---
+title: "Olympics: Insights for a TV Station in New Delhi"
+documentclass: elsarticle
+Thesis_FP: false
+output:
+  pdf_document:
+    keep_tex: true
+    template: Tex/TexDefault.txt
+    fig_width: 3.5
+    fig_height: 3.5
+  html_document:
+    df_print: paged
+Author1: "Angela Euston-Brown^[__Contributions:__  \\newline _The student would like
+  to thank the Olympics organiser for the data and Nico Katzke for the skills._]"
+Ref1: Stellenbosch University, Stellenbosch, South Africa
+Email1: 28784618\@sun.ac.za
+CorrespAuthor_1: true
+BottomRFooter: \footnotesize Page \thepage
+addtoprule: true
+addfootrule: true
+margin: 2.3
+bottom: 2
+top: 2.5
+HardSet_layout: true
+linenumbers: false
+bibliography: Tex/ref.bib
+csl: "Tex/harvard-stellenbosch-university.csl"
+RemovePreprintSubmittedTo: true
+Journal: Journal of Finance
+toc: false
+numbersections: true
+fontsize: 11pt
+linestretch: 1.5
+link-citations: true
+AddTitle: true
+abstract: 'The Summer Olympics are soon to be held in Paris this year. This document explores how India has historically done in the Olympics, as well as which countries have dominated and which have surprised us all. These findings form the solution for Question 4 of the datascience exam.'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
+
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+library(tinytex)
+library(pacman)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(glue)
+
+# Source all functions
+list.files('~/28784618/Question_4/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+# Load in Data
+Winter <- read_rds("~/28784618/data/olympics/winter.rds")
+Summer <- read_rds("~/28784618/data/olympics/summer.rds")
+GDP <- read_rds("~/28784618/data/olympics/GDP.rds")
+ 
+```
+
+# India's Comparative Performance \label{India}
+
+Figure \ref{Figure1} produced below compares the total number of medals won in the Summer Olympics by India and similar sized economies, emerging market economies and South American countries. Each dot also captures the country's GDP per capita in its size. 
+
+The plot shows that: 
+
+* India compares relatively favourably to countries with a similar economy, based on GDP per capita. However, Kenya outstrips India's medal winnings despite a lower GDP per Capita. Ukraine's total medal winnings similarly outsrip India's, but their GDP is marginally larger. India has the 3rd highest number of medals amongst those with similar GDP per Capita. 
+
+* India's total medals one is much lower than other emerging market economies (emerging market economies identified using sources [@sankaran2021does]). However, this does appear to be somewhat captured by the relative GDP per Capita within the group, with India having the lowest GDP per Capita. India's performance is comparable to that of Indonesia, despite a lower GDP per Capita. 
+
+* In comparison to selected South American countries (that are not considered an emerging market economy such as Brazil and Argentina), India performs well despite having lower GDP per Capita. In fact, despite having the lowest GDP per capita amongst this grouping, India has the highest total number of medals won. 
+
+```{r Figure1,  warning =  FALSE, fig.align = 'center', fig.cap = "India's Comparative Performance \\label{Figure1}", fig.ext = 'png', fig.height = 5, fig.width = 7, dev='png', dpi=900}
+
+summer_df <- prepare_summer(Summer, GDP)
+
+india <- india_performance_plot(summer_df, title = "India's Comparative Summer Olympic Performance", subtitle = "1896-2012", source = "Summer Olympics Data", labeljust=30)
+print(india)
+
+```
+
+\newpage
+
+# The Dominant Countries Over Time in Both Summer and Winter Olympics  \label{dominate}
+
+This ssection aims to show which countries have been most dominant in both the Winter and Summer Olympics over time. The plot shows the cumulative total number of medals every year, amongst 8 countries who have received more than 50 medals in any given year. 
+The figure highlights that:
+
+* While China and Russia have shown exponentially growth in the number of medals won, this performance has only occurred post-1980, emphasising that it is really the other 6 countries, namely the US, UK, Germany, Sweden, France and Australia, that have dominated the olympics over time. 
+
+* The US are by far the most dominant, with large numbers of medal winnings every Olympics. 
+
+* China and Russia despite only starting to win since the 1980s, have virtually caught up to Australia and Sweden in terms of total medals won. 
+
+```{r}
+# Prepare the data for the plots
+medal_data <- prepare_medal_data(Summer, Winter, GDP)
+
+# Establishing list of dominant countries over time
+dominant_countries <- medal_data %>% group_by(Year) %>% filter(Medals>50) %>% pull(Country) %>% unique()
+
+```
+
+```{r Figure2,  warning =  FALSE, fig.align = 'center', fig.cap = "Dominant Countries Cumulative Performance Over Time \\label{Figure2}", fig.ext = 'png', fig.height = 6, fig.width = 7, dev='png',dpi=800}
+
+# Plot the medals received by dominant countries cumulatively over time
+cumu_plot <- dominant_plot(medal_data, dominant_countries, cumulative = TRUE)
+print(cumu_plot)
+
+```
+
+\newpage
+
+# The Countries Punching Above Their Weight \label{punching}
+
+In the figures below, the aim is to show which countries "best punch above their weight" when it comes to winning medals. We focus on two things: which countries have a small overall population, and which countries have small overall GDP per Capita, but win many medals in the Olympics. 
+
+* Figure \ref{Figure3} capturing Population vs Total Medals shows that Sweden is doing particularly well in the Olympics despite a small population, as are Canada, Australia, Hungary, Norway and Finland. 
+
+* Figure \ref{Figure4}, which captures GDP per Capita vs Total Medals, shows that Hungary, Russia and China are doing well despite low GDP per Capita. Similarly, while Bulgaria and Poland have not amassed more than 400 medals, they have over 200 despite a GDP/capita less than $20 000.
+
+* Thus, it appears that Hungary have done well historically despite a comparatively smaller population and lower GDP/capita. 
+
+```{r}
+#condition for filtering countries with more than 50 medals
+countries <- medal_data %>% select(Country, Cumulative_Medals) %>% group_by(Country) %>% summarise(all_medals=max(Cumulative_Medals)) %>% arrange(desc(all_medals)) %>% filter(all_medals>50) %>% pull(Country) %>% unique()
+
+# establishing plot data
+pop_data <- prepare_punching_data(medal_data, select_countries = countries, metric = "Population")
+GDP_data <- prepare_punching_data(medal_data, select_countries = countries, metric = "GDP per Capita")
+```
+
+
+```{r Figure3,  warning =  FALSE, fig.align = 'center', fig.cap = "Punching above Population Size \\label{Figure3}", fig.ext = 'png', fig.height = 6, fig.width = 6, dev='png',dpi=800}
+
+# Create plot for Population metric
+plot_population <- create_punching_plot(pop_data, metric = "Population",
+                                      title = "Olympic Medals vs Population",
+                                      subtitle = "Analysis of countries punching above their weight",
+                                      source = "Olympics Data")
+
+print(plot_population)
+
+```
+
+```{r Figure4,  warning =  FALSE, fig.align = 'center', fig.cap = "Punching above Economy Size \\label{Figure4}", fig.ext = 'png', fig.height = 6, fig.width = 6, dev='png',dpi=800}
+
+# Create plot for GDP per Capita metric
+plot_gdp <- create_punching_plot(GDP_data, metric = "GDP per Capita",
+                               title = "Olympic Medals vs GDP per Capita",
+                               subtitle = "Analysis of countries punching above their weight",
+                               source = "Olympics Data")
+
+print(plot_gdp)
+
+```
+
+# My Favourite Events \label{my_events}
+
+My favourite event at the Olympics is the track events, particularly middle and long distance, so the 800m and 1500m Track. 
+
+The plot below highlights how:
+* The US dominates the Gold Medal wins for the 800m.
+* The UK take some of the gold medals from the US in the 800m.
+* The UK dominate the gold medal wins for the 1500m. 
+* Kenya enters as a strong contender in the 1500m. 
+* New Zealand and Algeria emerge as gold medal winners in the 1500m. 
+
+```{r Figure5,  warning =  FALSE, fig.align = 'center', fig.cap = "800m and 1500m Gold Medalists \\label{Figure5}", fig.ext = 'png', fig.height = 6, fig.width = 6, dev='png',dpi=800}
+
+
+my_events <- c("800M", "1500M")
+
+track_golds <- plot_track_gold(Summer, my_events, title = "Gold Medals in Athletics", subtitle = "800M and 1500M", x_label = "Country", y_label = "Number of Gold Medals")
+
+track_golds
+
+```
+
+\newpage
+
+# References {-}
+
+<div id="refs"></div>
+
+
+
+

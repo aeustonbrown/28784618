@@ -1,0 +1,472 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+# Master's Data Science Practical Exam
+## Student: Angela Euston-Brown (28784618)
+
+The following README will outline the data work completed in line with the Data Science Exam Questions. 
+
+# Getting Started
+## Creating Root Project and README
+
+In order to make a new project, I copied the folder's file path and ran the fmxdat::make_project() function in the console. The function produced this README, as well as the R project in the "28784618" Folder.
+
+## Loading Packages and Sourcing Functions
+
+For ease, I start by loading all the packages I will likely be using in this project.
+
+```{r}
+
+library(tinytex)
+library(Texevier)
+library(pacman)
+library(dplyr)
+p_load(tidyverse, lubridate)
+library(ggplot2)
+library(tidyr)
+library(glue)
+library(tidyverse)
+library(stringr)
+
+```
+
+## Creating a Folder for each Question
+
+The code chunk below is used to make a folder for each question, with its own code folder and Texevier template. I further choose not to create a new project for each question. The type of output, ie pdf or html, is generated according to what is specified for each question. Where the output type has not been specified, it has been chosen based on my discretion, with a preference for a PDF output.
+
+```{r, eval = F}
+
+dir <- "~/28784618"
+
+Texevier::create_template(directory = dir, template_name = "Question_1",  build_project = FALSE, open_project = FALSE) ## PDF
+Texevier::create_template(directory = dir, template_name = "Question_2", build_project = FALSE, open_project = FALSE) ## PDF Report
+Texevier::create_template(directory = dir, template_name = "Question_3", build_project = FALSE, open_project = FALSE) ## PDF Output
+Texevier::create_template(directory = dir, template_name = "Question_4", build_project = FALSE, open_project = FALSE) ## PDF Output Specified
+Texevier::create_template(directory = dir, template_name = "Question_5", build_project = FALSE, open_project = FALSE) ## PDF
+```
+
+## Data
+
+I put the unzipped data folders into the "data" folder in the project's root folder, not within each question folder. 
+
+
+# Question 1
+
+## Code used for Figures and Tables
+
+I start by sourcing all code (i.e. functions) used to build the figures and tables in my Texevier pdf.
+
+```{r}
+
+gc() # garbage collection
+
+# Source in all functions:
+list.files('Question_1/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+```
+
+## Loading the data
+
+I then load the datasets. 
+
+```{r}
+
+Loc <- "~/28784618/data/US_Baby_names/"
+
+Baby_Names <- read_rds(glue::glue("{Loc}Baby_Names_By_US_State.rds"))
+charts <- read_rds(glue::glue("{Loc}charts.rds"))
+HBO_Titles <- read_rds(glue::glue("{Loc}HBO_titles.rds"))
+HBO_Credits <- read_rds(glue::glue("{Loc}HBO_credits.rds"))
+                        
+```
+
+Now that the data is loaded, I can proceed with producing the plots.
+
+### First Figure
+
+The plot below contains the Spearman rank correlation of the top 25 baby names in the US in one year compared to every year for the next 3 years. To produce the plot, a correlation is calculated between each year's baby name rank and that of the following year, 2 years later, and 3 years later. This captures whether it is likely that a name remains popular from one year to the next, or whether there is a lack of persistence in naming popularity. 
+
+The plot shows that while there is a very high rank-correlation year-on-year, this correlation falls the further away one gets in time from the original year. As one can see, the purple line, which represents the rank-correlation between names in one year and the names in 3 years time, is lower than the others i.e. is less strongly correlated. This is to be expected. 
+
+Interestingly, the plot further shows that while popular names do persist in their popularity, this phenomena has been subsiding as time has gone on. Perhaps this change is due to larger quantities of media and more frequent communication. 
+
+The plot confirms the toy agencies suspicions that naming persistence has been falling since the 1990s, more notably for boys names. 
+
+However, in general, what is interesting about this plot, is that the trend has many spikes, despite a small, general trend toward less persistence. 
+
+```{r}
+
+# To complete analyses nationally for the US, and not disaggregated by State
+national_names <- create_national_names(Baby_Names)
+
+# Plotting the Rank Plot
+rank_plot <- plot_rank_correlation(
+  data = national_names,
+  title = "Rank Correlation Over Years by Gender",
+  subtitle = "Popular names show persistence, but less so in recent years",
+  source = "US Baby Names Data",
+  angle=45
+)
+
+print(rank_plot)
+
+```
+### Second Figure
+
+The second and third plot in the paper, which are shown below, highlight surges in name popularity in certain decades. The names were selected based on which 30 names had the highest year-on-year growth in popularity. 
+
+In the girls plot, it is evident that the name Jennifer and Amy spike in the 1970s, while Lisa spikes in the 1960s and Sarah spikes in the 1980s. 
+
+In the boys name plot, Joshua and Justin spike simultaneously in the 1970s and 1980s, while Jacob, Alexander and Nicholas grow in popularity from the 1980s.
+
+Note: In future, I would search the TV and Music datasets to identify causes behind name surges, but I was unfortunately too constrained for time and did not start with Question 1. 
+
+```{r}
+
+g1 <- plot_name_trends(national_names, gender = "M", title = "Surges in Baby Boys Names Over Time", subtitle = "1950s to 2000s", source = "US Baby Name Data", note = "The names presented are the names with the largest year-on-year surge during the given period.")
+print(g1)
+
+g2 <- plot_name_trends(national_names, gender = "F",  title = "Surges in Baby Girls Names Over Time", subtitle = "1950s to 2000s", source = "US Baby Name Data", note = "The names presented are the names with the largest year-on-year surge during the given period.")
+print(g2)
+
+
+```
+# Question 2
+
+NOTE: This question was only somewhat started but not fully answered. Please consider/mark this question last. 
+
+## Code used for Figures and Tables
+
+As done in Question 1, I start by loading in all functions used to load and adjust the data, and to produce the figures shown below.
+
+```{r}
+
+list.files('Question_2/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+```
+
+## Loading the data
+
+I then load the necessary data. 
+
+```{r}
+
+coldplay <- read_csv("data/Coldplay_vs_Metallica/Coldplay.csv")
+metallica <- read_csv("data/Coldplay_vs_Metallica/metallica.csv")
+spotify <- read_rds("data/Coldplay_vs_Metallica/Broader_Spotify_Info.rds")
+billboard_100 <- read_rds("data/Coldplay_vs_Metallica/charts.rds")
+
+```
+
+### First Figure
+
+The figure below shows the popularity of various Metallica albums.
+
+```{r}
+
+cleaned_data <- clean_album_data(metallica)
+albums <- plot_album_popularity(metallica, cleaned_data)
+albums
+
+```
+
+# Question 3
+
+In this question, I will draw insights into the Russia-Ukraine war to discuss as a panelist on an Australian news desk. The news segment is titled “From Russia With No Love”. My core insight will delve into whether countries inside the EU have contributed enough to ending the war. These insights are put together below using data on country aid to the Ukraine, and intend to highlight which countries are giving to the Ukrainian war effort, and which countries are not. 
+
+## Load in the functions
+
+As done in Question 1, I start by loading in all functions used to load and adjust the data and to produce the figures shown below.
+
+```{r}
+
+list.files('Question_3/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+```
+
+## Load in the data
+
+I then load the necessary data on allocations and commitments. 
+
+I further merge together the allocations and commitments data, using left join by Country and EU member status. In addition, there are several NA values for India's variables, I thus remove India from the dataset, particularly seeing as it is not a big player with regards to war aid. 
+
+```{r}
+
+alloc <- read_csv("data/Ukraine_Aid/Financial Allocations.csv")
+commit <- read_csv("data/Ukraine_Aid/Financial Commitments.csv")
+
+merged_df <- alloc %>% left_join(commit, by = c("Country", "EU member")) %>% filter(Country!="India")
+
+```
+
+### Statistics for Australia's Contribution
+
+Given that I will be presenting on an Australian news desk, I know that it would be a good idea to compare countries' allocated and committed war aid figures to that of Australia's. This would capture the audience. 
+
+As seen, Australia have committed a total of $0.64 Billion to the Ukrainian war effort, while they have allocated a total of $0.80 Billion. 
+
+But these statistics are merely for fun while on air. Lets get to the real question. 
+
+```{r}
+
+aus_commit <- merged_df %>% filter(Country %in% "Australia") %>% pull(max(`Total bilateral commitments($ billion)`)) %>% round(.,2) #0.64
+
+aus_alloc <- merged_df %>% filter(Country %in% "Australia") %>% pull(max(`Total bilateral allocations($ billion)`)) %>% round(.,2) #0.80
+
+```
+
+### First Figure
+
+In Figure 1 below, I produce a flipped bar chart showing the sum of total allocated aid and committed aid to Ukraine by donor group, namely all EU countries, the US and all other countries. 
+
+The plot shows that the EU have allocated less than non-EU countries, despite having 27 member states compared to only 12 (13 including the US) non-EU countries. The plot further shows a large gap in the total commitments compared to the total allocations toward the war effort. 
+
+I include the US separately in the plot below, as the country alone has committed more to the Ukrainian war effort than all other non-EU countries, as well as all EU countries. However, it is interesting to see that the US have yet to allocate any funds to the cause. 
+
+```{r}
+
+p <- total_by_group_barplot(merged_df, "Commited vs Allocated Aid to Ukraine across Donor Groups", "Contributions are summed across member countries")
+print(p)
+
+```
+
+### Second Figure
+
+The second figure, produced below, compares each country in the dataset's total allocations and commitments as a percent of their GDP. This is done to illustrate which countries are perhaps pulling more weight than others, based on the economic capacity to contribute to the Ukrainian cause. 
+
+The plot shows several interesting dynamics:
+- Countries are committing between 0-3% of their GDP, and this does not always lead to allocating funds. 
+- 4 EU countries are allocating considerably large proportions of their GDP, most notably with Estonia allocating over 75% of their GDP to the cause. This sheds light on the economically small countries hopes for Ukraine to win the war. 
+- In terms of allocation, the UK have made the largest total allocations as a percent of their GDP out of the non-EU states. While Normay have the largest total commitments as a percent of their GDP. 
+- Despite allocating over 25% of their GDP to the cause, Malta have committed very little.
+- Ultimately, the figure emphasises that there are several small EU countries that are doing a lot to stem the tide of the war despite their own small economies. 
+
+```{r}
+
+a <- percent_gdp_plot(merged_df, title = "Allocations and Commitments as Percent of GDP across Countries", subtitle = "Commitments appear much lower than Allocations", source = "Ukraine Aid Tracker")
+print(a)
+
+```
+
+### Third Figure
+
+The third and last figure simply gives a little more information for those curious viewers. The bar plot presents the total allocations of EU and non-EU states, and stacks the bar according to the type of assistance contributing to the total allocations. Total commitments are also indicated with a black dot, to highlight/reiterate any differences with regards to commitments and allocations. 
+
+The plot shows that the EU offer more financial assistance to the war effort than other countries, while other, non-EU countries predominantly offer military assistance. 
+
+```{r}
+
+c <- allocations_plot(merged_df, title = "Total Bilateral Allocations by Type of Assistance", subtitle = "The EU Countries offer more Financial and Humanitarian Aid than non-EU Countries", source = "Ukraine Aid Tracker")
+print(c)
+
+```
+
+
+# Question 4
+
+
+### Load in the functions
+
+As done in previous questions, I start by loading in all functions used to load and adjust the data, and to produce the figures shown below. 
+
+```{r}
+
+list.files('Question_4/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+```
+
+### Load in the data
+
+I then load the necessary data. 
+
+```{r}
+
+Winter <- read_rds("data/olympics/winter.rds")
+Summer <- read_rds("data/olympics/summer.rds")
+GDP <- read_rds("data/olympics/GDP.rds")
+ 
+```
+
+### First Figure: How Has India Fared in Past Summer Olympics?
+
+In order to compare India's Summer Olympic performance to that of similar sized economies, emerging market economies and South American countries, two key data wrangling processes must first take place:
+
+Firstly, we need country names and GDP in the Summer Olympics dataframe. We thus left join the GDP data frame with the Olympics data by "code" before proceeding with the analysis.  
+
+Secondly, we want to attempt to account accurately for the number of medals the country receives, and ensure that this is only 1 medal per team, as every team member is represented in the data. We do this done by assuming that there can only be one country winning a gold, silver or bronze medal per male/female event per year. The data is thus grouped accordingly, and where there are more than one instance of a gold, silver or bronze medal, it is assumed that this is due to it being a team sport, and we slice the group to only retain the first instance/row within the group. This is possible as we are only interested in the number of gold, silver or bronze medals in this task, and not the names of the athletes. 
+
+The figure produced below compares the total number of medals won in the Summer Olympics by India and similar sized economies, emerging market economies and South American countries. Each dot also captures the country's GDP per capita in its size. 
+
+The plot shows that: 
+
+* India compares relatively favourably to countries with a similar economy, based on GDP per capita. However, Kenya outstrips India's medal winnings despite a lower GDP per Capita. Ukraine's total medal winnings similarly outsrip India's, but their GDP is marginally larger. India has the 3rd highest number of medals amongst those with similar GDP per Capita. 
+
+* India's total medals one is much lower than other emerging market economies. However, this does appear to be somewhat captured by the relative GDP per Capita within the group, with India having the lowest GDP per Capita. India's performance is comparable to that of Indonesia, despite a lower GDP per Capita. 
+
+* In comparison to selected South American countries (that are not considered an emerging market economy such as Brazil and Argentina), India performs well despite having lower GDP per Capita. In fact, despite having the lowest GDP per capita amongst this grouping, India has the highest total number of medals won. 
+
+
+```{r}
+
+summer_df <- prepare_summer(Summer, GDP)
+
+india <- india_performance_plot(summer_df, title = "India's Comparative Summer Olympic Performance", subtitle = "1896-2012", source = "Summer Olympics Data", labeljust=30)
+print(india)
+
+```
+### Second Figure: Dominant Countries over Time
+
+In this figure, the aim is to show which countries have been most dominant in both the Winter and Summer Olympics over time. The plot shows the cumulative total number of medals every year, amongst 8 countries who have received more than 50 medals in any given year. 
+
+The figure highlights that:
+
+* While China and Russia have shown exponentially growth in the number of medals won, this performance has only occurred post-1980, emphasising that it is really the other 6 countries, namely the US, UK, Germany, Sweden, France and Australia, that have dominated the olympics over time. 
+
+* The US are by far the most dominant, with large numbers of medal winnings every Olympics. 
+
+* China and Russia despite only starting to win since the 1980s, have virtually caught up to Australia and Sweden in terms of total medals won. 
+
+```{r}
+# Prepare the data for the plots
+medal_data <- prepare_medal_data(Summer, Winter, GDP)
+
+# Establishing list of dominant countries over time
+dominant_countries <- medal_data %>% group_by(Year) %>% filter(Medals>50) %>% pull(Country) %>% unique()
+
+```
+
+```{r}
+
+# Plot the dominant countries over time
+time_plots <- dominant_plot(medal_data, dominant_countries)
+print(time_plots)
+
+
+# Plot the medals received by dominant countries cumulatively over time
+cumu_plot <- dominant_plot(medal_data, dominant_countries, cumulative = TRUE)
+print(cumu_plot)
+
+```
+
+
+### Third and Fourth Figure: Countries that Punch Above their Weight
+
+In the figures below, the aim is to show which countries "best punch above their weight" when it comes to winning medals. We focus on two things: which countries have a small overall population, and which countries have small overall GDP per Capita, but win many medals in the Olympics. 
+
+First, the sample is limited to only contain countries that have won more than 50 medals across all time. 
+
+Second, we run preview plots in the second R chunk below, to assess if there are any problematic outliers. We choose to exclude China and the US from the Population-Winnings figure and the US from the GDP-perCapita-Winnings figure. If given more time, I would have changed the metric for population size and GDP per Capita to include these countries without distorting the scales, but in the interest of time they were removed from the figures. 
+
+In the third R chunk below we produce the figures used in the paper. 
+
+* The first figure, capturing Population vs Total Medals shows that Sweden is doing particularly well in the Olympics despite a small population, as are Canada, Australia, Hungary, Norway and Finland. 
+
+* The second figure, which captures GDP per Capita vs Total Medals, shows that Hungary, Russia and China are doing well despite low GDP per Capita. Similarly, while Bulgaria and Poland have not amassed more than 400 medals, they have over 200 despite a GDP/capita less than $20 000.
+
+* Thus, it appears that Hungary have done well historically despite a comparatively smaller population and lower GDP/capita. 
+
+Below is data preparation:
+```{r}
+
+# condition for filtering countries with more than 50 medals
+countries <- medal_data %>% select(Country, Cumulative_Medals) %>% group_by(Country) %>% summarise(all_medals=max(Cumulative_Medals)) %>% arrange(desc(all_medals)) %>% filter(all_medals>50) %>% pull(Country) %>% unique()
+
+# establishing plot data
+pop_data <- prepare_punching_data(medal_data, select_countries = countries, metric = "Population")
+GDP_data <- prepare_punching_data(medal_data, select_countries = countries, metric = "GDP per Capita")
+
+```
+
+Below produces preview graphs for identifying outliers:
+```{r}
+
+# Preview Graphs:
+
+# punching above population 
+prev1 <- preview_plot(data=pop_data, metric = "Population")
+print(prev1)
+
+# remove China and US
+
+# punching above GDP per capita 
+prev2 <- preview_plot(data=GDP_data, metric = "GDP per Capita")
+print(prev2)
+
+# remove US only
+
+```
+
+The final graphs presented in the paper are produced below:
+```{r}
+
+# Presentation Graphs
+
+# Create plot for Population metric
+# China removed from plot due to outlying population size and US removed due to outlying medal numbers in the Population plot 
+
+plot_population <- create_punching_plot(pop_data, metric = "Population",
+                                      title = "Olympic Medals vs Population",
+                                      subtitle = "Analysis of countries punching above their weight",
+                                      source = "Olympics Data")
+
+print(plot_population)
+
+
+# Create plot for GDP per Capita metric
+# US removed in GDP per Capita plot
+
+plot_gdp <- create_punching_plot(GDP_data, metric = "GDP per Capita",
+                               title = "Olympic Medals vs GDP per Capita",
+                               subtitle = "Analysis of countries punching above their weight",
+                               source = "Olympics Data")
+
+print(plot_gdp)
+
+```
+
+### Fourth Figure
+
+My favourite event at the Olympics is the track events, particularly middle and long distance, so the 800m and 1500m Track. 
+
+The plot below highlights how:
+* The US dominates the Gold Medal wins for the 800m.
+* The UK take some of the gold medals from the US in the 800m.
+* The UK dominate the gold medal wins for the 1500m. 
+* Kenya enters as a strong contender in the 1500m. 
+* New Zealand and Algeria emerge as gold medal winners in the 1500m. 
+
+```{r}
+
+my_events <- c("800M", "1500M")
+
+track_golds <- plot_track_gold(Summer, my_events, title = "Gold Medals in Athletics", subtitle = "800M and 1500M", x_label = "Country", y_label = "Number of Gold Medals")
+
+track_golds
+
+```
+
+
+
+# Question 5
+
+## Load necessary packages
+
+```{r}
+library(dbbasic)
+```
+
+## Specify Project Variables in .Renviron File and Connect to database and test
+
+```{r}
+
+# Connecting to Database
+
+usethis::edit_r_environ()
+
+conn <- db_connect(db = "psql_datascience")
+DBI::dbDisconnect(conn)
+
+```

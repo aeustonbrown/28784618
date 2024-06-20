@@ -1,0 +1,132 @@
+---
+title: "US Baby Names: Insights for a Toy Agency on Naming Trends"
+documentclass: elsarticle
+Thesis_FP: false
+output:
+  pdf_document:
+    keep_tex: true
+    template: Tex/TexDefault.txt
+    fig_width: 3.5
+    fig_height: 3.5
+  html_document:
+    df_print: paged
+Author1: "Angela Euston-Brown^[__Contributions:__  \\newline _The student would like
+  to thank the US Records Office for the data and Nico Katzke for the skills._]"
+Ref1: Stellenbosch University, Stellenbosch, South Africa
+Email1: 28784618\@sun.ac.za
+CorrespAuthor_1: true
+BottomRFooter: \footnotesize Page \thepage
+addtoprule: true
+addfootrule: true
+margin: 2.3
+bottom: 2
+top: 2.5
+HardSet_layout: true
+linenumbers: false
+bibliography: Tex/ref.bib
+csl: "Tex/harvard-stellenbosch-university.csl"
+RemovePreprintSubmittedTo: true
+Journal: Journal of Finance
+toc: false
+numbersections: true
+fontsize: 11pt
+linestretch: 1.5
+link-citations: true
+AddTitle: true
+abstract: '.The findings in this paper form the solution for Question 1 of the Data Science exam. '
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
+
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+library(tinytex)
+library(pacman)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(glue)
+
+# Source all functions
+list.files('~/28784618/Question_1/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+# Load in Data
+Loc <- "~/28784618/data/US_Baby_names/"
+Baby_Names <- read_rds(glue::glue("{Loc}Baby_Names_By_US_State.rds"))
+charts <- read_rds(glue::glue("{Loc}charts.rds"))
+HBO_Titles <- read_rds(glue::glue("{Loc}HBO_titles.rds"))
+HBO_Credits <- read_rds(glue::glue("{Loc}HBO_credits.rds"))
+
+# To complete analyses nationally for the US, and not disaggregated by State
+national_names <- create_national_names(Baby_Names)
+```
+
+# Introduction \label{Introduction}
+
+
+
+#  Do Baby Names Persist in Popularity? Is this changing? \label{persist}
+
+The time series analyses in Figure \ref{Figure1} below contains the Spearman rank correlation of the top 25 baby names in the US in one year compared to every year for the next 3 years. This captures whether it is likely that a name remains popular from one year to the next, in other words, whether there is persistence in name popularity. 
+
+The plot shows the following:
+
+* While there is a very high rank-correlation year-on-year, this correlation falls the further away one gets in time from the original year. This can be seen as the purple line, which represents the rank-correlation between names in one year and the names in 3 years time, is lower than the others i.e. popular names in three years time, compared to two or one years time, are less strongly correlated with popular names today. This is to be expected. 
+
+* Interestingly, the plot further shows that while popular names do persist in their popularity, this phenomena has been subsiding as time has progressed. Perhaps this change is due to larger quantities of media and more frequent communication. 
+
+* The plot somewhat confirms the toy agency's suspicions, that naming persistence has been falling since the 1990s, however this change is only convincingly notable for boys. 
+* However, in general, what is interesting about this plot is that the naming persistence trend has many spikes, despite a small, general trend toward less persistence in name popularity. 
+
+```{r Figure1,  warning =  FALSE, fig.align = 'center', fig.cap = "Persistence of Popular Names \\label{Figure1}", fig.ext = 'png', fig.height = 5, fig.width = 7, dev='png', dpi=900}
+
+rank_plot <- plot_rank_correlation(
+  data = national_names,
+  title = "Rank Correlation Over Years by Gender",
+  subtitle = "Popular names show persistence, but less so in recent years",
+  source = "US Baby Names Data",
+  angle=45
+)
+
+print(rank_plot)
+
+```
+
+\newpage
+
+# Which names have surged, in which decades and why? \label{surge}
+
+The plots, which are shown below, highlight surges in name popularity across certain decades. The size of the dot reflects the popularity of the name, with the growth or fall in size being of interest. The names were selected based on which 30 names had the highest year-on-year growth in popularity. 
+
+* In the girls plot, Figure \ref{Figure2} below, it is evident that the name Jennifer and Amy spike in the 1970s, while Lisa spikes in the 1960s and Sarah spikes in the 1980s. 
+
+* Figure \ref{Figure3}, the boys name plot, shows that the names Joshua and Justin spike simultaneously in the 1970s and 1980s, while Jacob, Alexander and Nicholas grow in popularity from the 1980s.
+
+```{r Figure2,  warning =  FALSE, fig.align = 'center', fig.cap = "Surge in Girls Names \\label{Figure2}", fig.ext = 'png', fig.height = 6, fig.width = 7, dev='png',dpi=800}
+
+g1 <- plot_name_trends(national_names, gender = "F", title = "Surges in Baby Girls Names Over Time", subtitle = "1950s to 2000s", source = "US Baby Name Data", note = "The names presented are the names with the largest year-on-year surge during the given period.")
+print(g1)
+
+```
+
+```{r Figure3,  warning =  FALSE, fig.align = 'center', fig.cap = "Surges in Boys Names \\label{Figure3}", fig.ext = 'png', fig.height = 6, fig.width = 7, dev='png',dpi=800}
+
+g2 <- plot_name_trends(national_names, gender = "M",  title = "Surges in Baby Boys Names Over Time", subtitle = "1950s to 2000s", source = "US Baby Name Data", note = "The names presented are the names with the largest year-on-year surge during the given period.")
+print(g2)
+```
+
+# Notes
+
+This paper was made using the Texevier [@Texevier] package.
+
+
+\newpage
+
+# References {-}
+
+<div id="refs"></div>
+
+
+
+

@@ -1,0 +1,147 @@
+---
+title: "Russia-Ukraine Conflict: Insights for an Australian news desk"
+documentclass: elsarticle
+Thesis_FP: false
+output:
+  pdf_document:
+    keep_tex: true
+    template: Tex/TexDefault.txt
+    fig_width: 3.5
+    fig_height: 3.5
+  html_document:
+    df_print: paged
+Author1: "Angela Euston-Brown^[__Contributions:__  \\newline _The student would like
+  to thank the Ukraine Support Tracker for the data and Nico Katzke for the skills._]"
+Ref1: Stellenbosch University, Stellenbosch, South Africa
+Email1: 28784618\@sun.ac.za
+CorrespAuthor_1: true
+BottomRFooter: \footnotesize Page \thepage
+addtoprule: true
+addfootrule: true
+margin: 2.3
+bottom: 2
+top: 2.5
+HardSet_layout: true
+linenumbers: false
+bibliography: Tex/ref.bib
+csl: "Tex/harvard-stellenbosch-university.csl"
+RemovePreprintSubmittedTo: true
+Journal: Journal of Finance
+toc: false
+numbersections: true
+fontsize: 11pt
+linestretch: 1.5
+link-citations: true
+AddTitle: true
+abstract: 'The Russia-Ukraine conflict has been on-going since 2014, with the conflict escalating on the 24 February 2022. This document explores which countries have been giving to the Ukrainian cause, since 2022, and specifically explores whether the EU countries have been contributing enough. The insights are summarised as bullet points for the Australian news desk segment "From Russia With No Love". These findings form the solution for Question 3 of the datascience exam. '
+---
+
+<!-- First: Set your default preferences for chunk options: -->
+
+<!-- If you want a chunk's code to be printed, set echo = TRUE. message = FALSE stops R printing ugly package loading details in your final paper too. I also suggest setting warning = FALSE and checking for warnings in R, else you might find ugly warnings in your paper. -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
+
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+library(tinytex)
+library(pacman)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(glue)
+
+# Source all functions
+list.files('~/28784618/Question_3/code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+
+# Load in Data
+alloc <- read_csv("~/28784618/data/Ukraine_Aid/Financial Allocations.csv")
+commit <- read_csv("~/28784618/data/Ukraine_Aid/Financial Commitments.csv")
+
+merged_df <- alloc %>% left_join(commit, by = c("Country", "EU member")) %>% filter(Country!="India")
+```
+
+
+
+# Introduction \label{Introduction}
+
+The Russia-Ukraine conflict has been on-going since 2014, with the conflict escalating on the 24 February 2022. This document explores which countries have been giving to the Ukrainian cause, since 2022. The insights are summarised as bullet points for the Australian news desk segment "From Russia With No Love". 
+
+It is important to note that allocations, in our understanding, refer to sums of money allocated to a cause within a country's budget, while commitments are pledges to allocate money to a cause. Thus, many countries may commit to aid in the war effort, but never actually allocate the contribution to said cause. This will be explored further in the graphics below.
+
+# Are the EU doing enough? \label{EU}
+
+\\label{Figure1} below shows the sum of total allocated aid and committed aid to Ukraine by donor group, namely the US, all EU countries, and all other countries in the dataset.  
+
+* The plot shows that the EU have allocated less than non-EU countries, despite having 27 member states compared to only 12 (13 including the US) non-EU countries. 
+
+* The plot further shows a large gap in the total commitments compared to the total allocations toward the war effort, particularly amongst EU nations. 
+
+* The US is shown separately, as the country alone has committed more to the Ukrainian war effort than all other non-EU countries, as well as all EU countries. However, it is interesting to see that the US have yet to allocate any funds to the cause. Perhaps the EU aren't doing so badly after all. 
+
+```{r Figure1,  warning =  FALSE, fig.align = 'center', fig.cap = "EU Allocations \\label{Figure1}", fig.ext = 'png', fig.height = 3, fig.width = 7, dev='png', dpi=900}
+
+
+p <- total_by_group_barplot(merged_df, "Commited vs Allocated Aid to Ukraine across Donor Groups", "Contributions are summed across member countries")
+p
+
+```
+
+
+# Which countries are pulling their weight? \label{vsGDP}
+
+The figure produced below compares each country in the dataset's total allocations and commitments as a percentage of their GDP, allowing us to illustrate which countries are perhaps pulling more weight than others based on their economic capacity.
+
+The plot shows several interesting dynamics:
+* Countries are committing between 0-3% of their GDP, and this does not always lead to allocating funds. 
+* 4 EU countries are allocating considerably large proportions of their GDP, most notably with Estonia allocating over 75% of their GDP to the cause. This sheds light on the economically small countries hopes for Ukraine to win the war. 
+* In terms of allocation, the UK have made the largest total allocations as a percent of their GDP out of the non-EU states. While Normay have the largest total commitments as a percent of their GDP. 
+* Despite allocating over 25% of their GDP to the cause, Malta have committed very little.
+
+Ultimately, the figure emphasises that there are several small EU countries that are doing a lot to stem the tide of the war despite their own small economies. 
+
+```{r Figure2,  warning =  FALSE, fig.align = 'center', fig.cap = "Percent GDP \\label{Figure2}", fig.ext = 'png', fig.height = 6, fig.width = 7, dev='png',dpi=800}
+
+a <- percent_gdp_plot(merged_df, title = "Allocations and Commitments as Percent of GDP across Countries", subtitle = "Commitments appear much lower than Allocations", source = "Ukraine Aid Tracker")
+a
+
+```
+
+
+# An extra detail: What type of assistance dominates the EU's war aid? \label{aid_type}
+
+The third and last figure provides a little more information for those curious viewers. The bar plot presents the total allocations of EU and non-EU states, broken down into the different types of assistance.  
+
+* The plot shows that the EU offer more financial assistance to the war effort than other countries. 
+
+* In comparison, non-EU countries predominantly offer military assistance. 
+
+* Total commitments are also indicated with a black dot, to reiterate the differences between donor groups' commitments and allocations.
+
+```{r Figure3,  warning =  FALSE, fig.align = 'center', fig.cap = "Aid Type \\label{Figure3}", fig.ext = 'png', fig.height = 6, fig.width = 6, dev='png',dpi=800}
+
+c <- allocations_plot(merged_df, title = "Total Bilateral Allocations by Type of Assistance", subtitle = "Subtitle Here", source = "Ukraine Aid Tracker")
+c
+
+```
+
+# Summary for Interpretation on Air
+
+ * The EU have not allocated more to the war effort than other countries, despite having more member states. 
+ 
+ * Small EU countries are contributing considerable proportions of their GDP to stem the tide of the Ukraine-Russia war. 
+ 
+ * The EU offer almost equal quantities of military and financial aid, but appear to be offering comparatively more financial aid than other non-EU countries. 
+
+
+This pdf was put together using Texevier[@Texevier].
+
+\newpage
+
+# References {-}
+
+<div id="refs"></div>
+
+
