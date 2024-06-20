@@ -62,10 +62,6 @@ HBO_Credits <- read_rds(glue::glue("{Loc}HBO_credits.rds"))
 national_names <- create_national_names(Baby_Names)
 ```
 
-# Introduction \label{Introduction}
-
-
-
 #  Do Baby Names Persist in Popularity? Is this changing? \label{persist}
 
 The time series analyses in Figure \ref{Figure1} below contains the Spearman rank correlation of the top 25 baby names in the US in one year compared to every year for the next 3 years. This captures whether it is likely that a name remains popular from one year to the next, in other words, whether there is persistence in name popularity. 
@@ -116,7 +112,7 @@ g2 <- plot_name_trends(national_names, gender = "M",  title = "Surges in Baby Bo
 print(g2)
 ```
 
-# Notes
+# Notes {-}
 
 This paper was made using the Texevier [@Texevier] package.
 
